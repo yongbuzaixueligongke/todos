@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.imageview.R;
 import java.util.List;
 
 public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.ProjectViewHolder> {
@@ -20,14 +21,14 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
     @Override
     public ProjectViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(android.R.layout.simple_list_item_1, parent, false);
+                .inflate(R.layout.item_project, parent, false);
         return new ProjectViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ProjectViewHolder holder, int position) {
         String projectName = projectList.get(position);
-        holder.projectNameTextView.setText(projectName);
+        holder.projectTitleTextView.setText(projectName);
     }
 
     @Override
@@ -36,11 +37,11 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
     }
 
     public static class ProjectViewHolder extends RecyclerView.ViewHolder {
-        TextView projectNameTextView;
+        TextView projectTitleTextView;
 
         public ProjectViewHolder(@NonNull View itemView) {
             super(itemView);
-            projectNameTextView = itemView.findViewById(android.R.id.text1);
+            projectTitleTextView = itemView.findViewById(R.id.project_title);
         }
     }
 }

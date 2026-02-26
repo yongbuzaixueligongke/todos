@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.example.myapplication.ui.projects.ProjectsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.List;
@@ -31,16 +32,22 @@ public class MainActivity extends AppCompatActivity {
         // 替换弃用方法
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_message) {
-                return true;
-            } else if (item.getItemId() == R.id.nav_music) {
-                startActivity(new Intent(MainActivity.this, MusicActivity.class));
+                // 显示ListView，隐藏Fragment容器
+                listView.setVisibility(View.VISIBLE);
+                findViewById(R.id.fragment_container).setVisibility(View.GONE);
                 return true;
             } else if (item.getItemId() == R.id.nav_profile) {
                 startActivity(new Intent(MainActivity.this, ProfileActivity.class));
                 return true;
+            } else if (item.getItemId() == R.id.nav_calendar) {
+                startActivity(new Intent(MainActivity.this, CalendarActivity.class));
+                return true;
             } else if (item.getItemId() == R.id.nav_projects) {
+                // 隐藏ListView，显示Fragment容器
+                listView.setVisibility(View.GONE);
+                findViewById(R.id.fragment_container).setVisibility(View.VISIBLE);
                 getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new com.example.myapplication.ui.projects.ProjectsFragment())
+                    .replace(R.id.fragment_container, new ProjectsFragment())
                     .commit();
                 return true;
             }

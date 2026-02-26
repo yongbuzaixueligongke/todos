@@ -39,121 +39,6 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
-        <!-- 项目卡片区域 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <!-- 卡片1 -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:cardBackgroundColor="#F9F4F4"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="113dp"
-                        android:src="@drawable/card_01" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Project 1"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/x_mins_ago"
-                        android:textColor="@android:color/darker_gray"
-                        android:textSize="12sp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:cardBackgroundColor="#FAF5F5"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="113dp"
-                        android:src="@drawable/card_02" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Project 1"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="3 mins ago"
-                        android:textColor="@android:color/darker_gray"
-                        android:textSize="12sp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:cardBackgroundColor="#F8F3F3"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="113dp"
-                        android:src="@drawable/card_03" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/project_1"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="3 mins ago"
-                        android:textColor="@android:color/darker_gray"
-                        android:textSize="12sp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- 其他卡片... -->
-        </LinearLayout>
-
         <!-- 待办事项列表 -->
         <TextView
             android:layout_width="wrap_content"
@@ -162,26 +47,33 @@
             android:text="@string/weekly_todos"
             android:textSize="16sp" />
 
-        <!-- 待办列表：高度填满剩余空间，内容多时可自由下拉滚动 -->
-        <ListView
-            android:id="@+id/message_list_view"
-            android:layout_width="match_parent"
-            android:layout_height="338dp"
-            android:layout_weight="1"
-            android:background="#FFF9F9"
-            android:divider="@android:color/transparent"
-            android:dividerHeight="4dp"
-            android:scrollbars="vertical" />
-
-        <!-- Fragment 容器 -->
-
-        <!-- 底部导航栏 -->
+        <!-- 内容区域：根据需要显示Fragment容器或ListView -->
         <FrameLayout
-            android:id="@+id/fragment_container"
+            android:id="@+id/content_container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="1">
 
+            <!-- Fragment 容器 -->
+            <FrameLayout
+                android:id="@+id/fragment_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
+            <!-- 待办列表：高度填满剩余空间，内容多时可自由下拉滚动 -->
+            <ListView
+                android:id="@+id/message_list_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#FFF9F9"
+                android:divider="@android:color/transparent"
+                android:dividerHeight="4dp"
+                android:scrollbars="vertical" />
+
+        </FrameLayout>
+
+        <!-- 底部导航栏 -->
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation"
             android:layout_width="match_parent"
@@ -193,6 +85,7 @@
 
     <!-- 侧边导航栏 -->
     <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"

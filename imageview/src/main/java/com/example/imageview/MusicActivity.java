@@ -66,18 +66,19 @@ public class MusicActivity extends AppCompatActivity {
         stopButton.setOnClickListener(v -> stopMusic());
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_music);
+        bottomNavigationView.setSelectedItemId(R.id.nav_profile);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_message) {
                 startActivity(new Intent(MusicActivity.this, MessageActivity.class));
-                return true;
-            } else if (item.getItemId() == R.id.nav_music) {
                 return true;
             } else if (item.getItemId() == R.id.nav_calendar) {
                 startActivity(new Intent(MusicActivity.this, CalendarActivity.class));
                 return true;
             } else if (item.getItemId() == R.id.nav_profile) {
                 startActivity(new Intent(MusicActivity.this, ProfileActivity.class));
+                return true;
+            } else if (item.getItemId() == R.id.nav_projects) {
+                startActivity(new Intent(MusicActivity.this, MessageActivity.class));
                 return true;
             }
             return false;

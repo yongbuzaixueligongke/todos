@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.example.myapplication.ui.projects.ProjectsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
@@ -68,10 +69,9 @@ public class MessageActivity extends AppCompatActivity {
         bottomNavigationView.setSelectedItemId(R.id.nav_message);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_message) {
-                return true;
-            }
-            if (item.getItemId() == R.id.nav_music) {
-                startActivity(new Intent(MessageActivity.this, MusicActivity.class));
+                // 显示ListView，隐藏Fragment容器
+                listView.setVisibility(View.VISIBLE);
+                findViewById(R.id.fragment_container).setVisibility(View.GONE);
                 return true;
             }
             if (item.getItemId() == R.id.nav_calendar) {
@@ -80,6 +80,15 @@ public class MessageActivity extends AppCompatActivity {
             }
             if (item.getItemId() == R.id.nav_profile) {
                 startActivity(new Intent(MessageActivity.this, ProfileActivity.class));
+                return true;
+            }
+            if (item.getItemId() == R.id.nav_projects) {
+                // 隐藏ListView，显示Fragment容器
+                listView.setVisibility(View.GONE);
+                findViewById(R.id.fragment_container).setVisibility(View.VISIBLE);
+                getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new ProjectsFragment())
+                    .commit();
                 return true;
             }
             return false;

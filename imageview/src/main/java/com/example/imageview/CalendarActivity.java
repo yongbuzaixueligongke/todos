@@ -73,13 +73,13 @@ public class CalendarActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.nav_message) {
                 startActivity(new Intent(CalendarActivity.this, MessageActivity.class));
                 return true;
-            } else if (item.getItemId() == R.id.nav_music) {
-                startActivity(new Intent(CalendarActivity.this, MusicActivity.class));
-                return true;
             } else if (item.getItemId() == R.id.nav_calendar) {
                 return true;
             } else if (item.getItemId() == R.id.nav_profile) {
                 startActivity(new Intent(CalendarActivity.this, ProfileActivity.class));
+                return true;
+            } else if (item.getItemId() == R.id.nav_projects) {
+                startActivity(new Intent(CalendarActivity.this, MessageActivity.class));
                 return true;
             }
             return false;
