@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/material_dynamic_neutral95">
+
+    <TextView
+        android:id="@+id/calendar_title"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:padding="16dp"
+        android:text="日历"
+        android:textSize="24sp"
+        android:textColor="@android:color/black"
+        android:background="@color/grey" />
+
+    <!-- 月份切换栏 -->
+    <LinearLayout
+        android:id="@+id/month_nav"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <ImageButton
+            android:id="@+id/btn_prev_month"
+            android:layout_width="80dp"
+            android:layout_height="60dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="上一月"
+            android:src="@android:drawable/ic_media_previous" />
+
+        <TextView
+            android:id="@+id/month_label"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="2026年2月"
+            android:textColor="@android:color/black"
+            android:textSize="18sp" />
+
+        <ImageButton
+            android:id="@+id/btn_next_month"
+            android:layout_width="80dp"
+            android:layout_height="60dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="下一月"
+            android:src="@android:drawable/ic_media_next" />
+    </LinearLayout>
+
+    <!-- 星期栏（周一到周日） -->
+    <LinearLayout
+        android:id="@+id/week_header"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:orientation="horizontal">
+
+        <TextView style="@style/CalendarWeekHeaderCell" android:text="周一" />
+        <TextView style="@style/CalendarWeekHeaderCell" android:text="周二" />
+        <TextView style="@style/CalendarWeekHeaderCell" android:text="周三" />
+        <TextView style="@style/CalendarWeekHeaderCell" android:text="周四" />
+        <TextView style="@style/CalendarWeekHeaderCell" android:text="周五" />
+        <TextView style="@style/CalendarWeekHeaderCell" android:text="周六" />
+        <TextView style="@style/CalendarWeekHeaderCell" android:text="周日" />
+    </LinearLayout>
+
+    <!-- 月视图网格：7列×6行，格子高度由代码按屏幕平均分配 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/calendar_grid"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:overScrollMode="never" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_gravity="bottom"
+        app:menu="@menu/bottom_navigation_menu" />
+
+</LinearLayout>
+
