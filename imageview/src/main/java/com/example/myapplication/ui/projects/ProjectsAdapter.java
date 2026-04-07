@@ -1,20 +1,24 @@
 package com.example.myapplication.ui.projects;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.imageview.Project;
 import com.example.imageview.R;
 import java.util.List;
 
 public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.ProjectViewHolder> {
 
-    private final List<String> projectList;
+    private final List<Project> projectList;
+    private final Context context;
 
-    public ProjectsAdapter(List<String> projectList) {
+    public ProjectsAdapter(List<Project> projectList, Context context) {
         this.projectList = projectList;
+        this.context = context;
     }
 
     @NonNull
@@ -27,8 +31,19 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
 
     @Override
     public void onBindViewHolder(@NonNull ProjectViewHolder holder, int position) {
-        String projectName = projectList.get(position);
-        holder.projectTitleTextView.setText(projectName);
+        if (projectList != null && position < projectList.size()) {
+            Project project = projectList.get(position);
+            if (project != null && holder.projectTitleTextView != null) {
+                holder.projectTitleTextView.setText(project.getTitle());
+
+                // 添加点击事件
+                holder.itemView.setOnClickListener(v -> {
+                    android.content.Intent intent = new android.content.Intent(context, com.example.imageview.ProjectDetailActivity.class);
+                    intent.putExtra("project_id", project.getId());
+                    context.startActivity(intent);
+                });
+            }
+        }
     }
 
     @Override

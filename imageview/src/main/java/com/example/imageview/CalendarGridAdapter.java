@@ -4,6 +4,7 @@ import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,12 +19,18 @@ public class CalendarGridAdapter extends RecyclerView.Adapter<CalendarGridAdapte
         void onDayClick(CalendarDay day);
     }
 
+    public interface OnTodoClickListener {
+        void onTodoClick(TodoItem todo);
+    }
+
     private final List<CalendarDay> days = new ArrayList<>();
-    private final OnDayClickListener listener;
+    private final OnDayClickListener dayListener;
+    private final OnTodoClickListener todoListener;
     private int cellHeightPx = 0;
 
-    public CalendarGridAdapter(OnDayClickListener listener) {
-        this.listener = listener;
+    public CalendarGridAdapter(OnDayClickListener dayListener, OnTodoClickListener todoListener) {
+        this.dayListener = dayListener;
+        this.todoListener = todoListener;
     }
 
     public void setDays(List<CalendarDay> newDays) {
@@ -70,9 +77,63 @@ public class CalendarGridAdapter extends RecyclerView.Adapter<CalendarGridAdapte
             holder.dayNumber.setTypeface(Typeface.DEFAULT);
         }
 
+        // 清空待办事项容器
+        holder.todosContainer.removeAllViews();
+
+        // 添加待办事项标签
+        if (day.hasTodos()) {
+            List<TodoItem> todos = day.getTodos();
+            // 最多显示3个待办事项
+            int maxTodos = Math.min(todos.size(), 3);
+            for (int i = 0; i < maxTodos; i++) {
+                TodoItem todo = todos.get(i);
+                TextView todoTag = new TextView(holder.itemView.getContext());
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                params.setMargins(0, 4, 0, 4);
+                todoTag.setLayoutParams(params);
+                todoTag.setText(todo.getTitle());
+                todoTag.setTextSize(10);
+                todoTag.setPadding(4, 2, 4, 2);
+                todoTag.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                todoTag.setSingleLine(true);
+                
+                // 根据待办事项的标签设置不同的颜色
+                switch (todo.getTag()) {
+                    case "工作":
+                        todoTag.setBackgroundColor(0xFFE3F2FD); // 浅蓝色
+                        break;
+                    case "学习":
+                        todoTag.setBackgroundColor(0xFFE8F5E8); // 浅绿色
+                        break;
+                    case "健康":
+                        todoTag.setBackgroundColor(0xFFFFEBEE); // 浅红色
+                        break;
+                    case "旅行":
+                        todoTag.setBackgroundColor(0xFFFFF3E0); // 浅橙色
+                        break;
+                    default:
+                        todoTag.setBackgroundColor(0xFFF5F5F5); // 浅灰色
+                        break;
+                }
+
+                // 添加点击事件
+                final TodoItem finalTodo = todo;
+                todoTag.setOnClickListener(v -> {
+                    if (todoListener != null) {
+                        todoListener.onTodoClick(finalTodo);
+                    }
+                });
+
+                holder.todosContainer.addView(todoTag);
+            }
+        }
+
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onDayClick(day);
+            if (dayListener != null) {
+                dayListener.onDayClick(day);
             }
         });
     }
@@ -84,10 +145,12 @@ public class CalendarGridAdapter extends RecyclerView.Adapter<CalendarGridAdapte
 
     static class DayViewHolder extends RecyclerView.ViewHolder {
         TextView dayNumber;
+        LinearLayout todosContainer;
 
         DayViewHolder(@NonNull View itemView) {
             super(itemView);
             dayNumber = itemView.findViewById(R.id.day_number);
+            todosContainer = itemView.findViewById(R.id.day_todos_container);
         }
     }
 }

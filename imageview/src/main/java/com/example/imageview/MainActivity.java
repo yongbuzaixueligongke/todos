@@ -32,8 +32,9 @@ public class MainActivity extends AppCompatActivity {
         // 替换弃用方法
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_message) {
-                // 显示ListView，隐藏Fragment容器
+                // 显示ListView和待办悬浮按钮，隐藏Fragment容器
                 listView.setVisibility(View.VISIBLE);
+                findViewById(R.id.fab_add_todo).setVisibility(View.VISIBLE);
                 findViewById(R.id.fragment_container).setVisibility(View.GONE);
                 return true;
             } else if (item.getItemId() == R.id.nav_profile) {
@@ -43,8 +44,9 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, CalendarActivity.class));
                 return true;
             } else if (item.getItemId() == R.id.nav_projects) {
-                // 隐藏ListView，显示Fragment容器
+                // 隐藏ListView和待办悬浮按钮，显示Fragment容器
                 listView.setVisibility(View.GONE);
+                findViewById(R.id.fab_add_todo).setVisibility(View.GONE);
                 findViewById(R.id.fragment_container).setVisibility(View.VISIBLE);
                 getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new ProjectsFragment())

@@ -78,7 +78,9 @@ public class MusicActivity extends AppCompatActivity {
                 startActivity(new Intent(MusicActivity.this, ProfileActivity.class));
                 return true;
             } else if (item.getItemId() == R.id.nav_projects) {
-                startActivity(new Intent(MusicActivity.this, MessageActivity.class));
+                Intent intent = new Intent(MusicActivity.this, MessageActivity.class);
+                intent.putExtra("navigate_to_projects", true);
+                startActivity(intent);
                 return true;
             }
             return false;

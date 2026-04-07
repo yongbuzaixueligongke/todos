@@ -47,4 +47,13 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("androidx.navigation:navigation-fragment:2.7.7")
     implementation("androidx.navigation:navigation-ui:2.7.7")
+    
+    // 网络请求
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp)
+    implementation(libs.gson)
+    
+    // MySQL JDBC驱动
+    implementation("mysql:mysql-connector-java:8.0.33")
 }

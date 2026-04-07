@@ -71,6 +71,16 @@
                 android:dividerHeight="4dp"
                 android:scrollbars="vertical" />
 
+            <!-- 新增待办悬浮按钮 -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_add_todo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:layout_gravity="bottom|end"
+                android:src="@drawable/add_circle"
+                android:contentDescription="新增待办" />
+
         </FrameLayout>
 
         <!-- 底部导航栏 -->

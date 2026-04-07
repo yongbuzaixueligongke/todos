@@ -4,6 +4,10 @@
         android:title="待办"
         android:icon="@drawable/icon_01" />
     <item
+        android:id="@+id/nav_projects"
+        android:title="项目"
+        android:icon="@drawable/icon_projects" />
+    <item
         android:id="@+id/nav_calendar"
         android:title="日历"
         android:icon="@drawable/icon_02" />
@@ -11,8 +15,4 @@
         android:id="@+id/nav_profile"
         android:title="我的"
         android:icon="@drawable/icon_03" />
-    <item
-        android:id="@+id/nav_projects"
-        android:title="项目"
-        android:icon="@drawable/icon_projects" />
 </menu>

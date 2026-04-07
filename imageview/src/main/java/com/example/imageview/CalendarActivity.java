@@ -17,6 +17,8 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CalendarActivity extends AppCompatActivity {
 
@@ -27,6 +29,10 @@ public class CalendarActivity extends AppCompatActivity {
     private RecyclerView calendarGrid;
     private CalendarGridAdapter gridAdapter;
     private final Calendar currentMonth = Calendar.getInstance();
+    private AppDatabase database;
+    private TodoDao todoDao;
+    private List<TodoItem> allTodos;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,11 +45,26 @@ public class CalendarActivity extends AppCompatActivity {
         btnNextMonth = findViewById(R.id.btn_next_month);
         calendarGrid = findViewById(R.id.calendar_grid);
 
-        gridAdapter = new CalendarGridAdapter(day -> {
-            calendarTitle.setText("日历 · 选择日期：" + formatDate(day.getDate().getTimeInMillis()));
-            // 预留：未来可在这里打开“当天待办列表”或在格子内显示待办
-            Toast.makeText(this, "选择：" + formatDate(day.getDate().getTimeInMillis()), Toast.LENGTH_SHORT).show();
-        });
+        // 初始化数据库
+        database = AppDatabase.getInstance(this);
+        todoDao = database.todoDao();
+
+        // 加载所有待办事项
+        loadAllTodos();
+
+        gridAdapter = new CalendarGridAdapter(
+                day -> {
+                    calendarTitle.setText("日历 · 选择日期：" + formatDate(day.getDate().getTimeInMillis()));
+                    // 预留：未来可在这里打开“当天待办列表”或在格子内显示待办
+                    Toast.makeText(this, "选择：" + formatDate(day.getDate().getTimeInMillis()), Toast.LENGTH_SHORT).show();
+                },
+                todo -> {
+                    // 打开待办详情页
+                    Intent intent = new Intent(this, TodoDetailActivity.class);
+                    intent.putExtra("todo_id", todo.getId());
+                    startActivity(intent);
+                }
+        );
 
         calendarGrid.setLayoutManager(new GridLayoutManager(this, 7));
         calendarGrid.setAdapter(gridAdapter);
@@ -53,7 +74,6 @@ public class CalendarActivity extends AppCompatActivity {
         currentMonth.setTimeInMillis(today.getTimeInMillis());
         currentMonth.set(Calendar.DAY_OF_MONTH, 1);
         calendarTitle.setText("日历 · 今天：" + formatDate(today.getTimeInMillis()));
-        updateMonthUi();
 
         btnPrevMonth.setOnClickListener(v -> {
             currentMonth.add(Calendar.MONTH, -1);
@@ -79,10 +99,21 @@ public class CalendarActivity extends AppCompatActivity {
                 startActivity(new Intent(CalendarActivity.this, ProfileActivity.class));
                 return true;
             } else if (item.getItemId() == R.id.nav_projects) {
-                startActivity(new Intent(CalendarActivity.this, MessageActivity.class));
+                Intent intent = new Intent(CalendarActivity.this, MessageActivity.class);
+                intent.putExtra("navigate_to_projects", true);
+                startActivity(intent);
                 return true;
             }
             return false;
+        });
+    }
+
+    private void loadAllTodos() {
+        executor.execute(() -> {
+            allTodos = todoDao.getAll();
+            runOnUiThread(() -> {
+                updateMonthUi();
+            });
         });
     }
 
@@ -120,10 +151,39 @@ public class CalendarActivity extends AppCompatActivity {
             Calendar dayCal = (Calendar) cal.clone();
             boolean inCurrentMonth = (dayCal.get(Calendar.YEAR) == targetYear) && (dayCal.get(Calendar.MONTH) == targetMonth);
             boolean isToday = sameDay(dayCal, today);
-            result.add(new CalendarDay(dayCal, inCurrentMonth, isToday));
+            CalendarDay calendarDay = new CalendarDay(dayCal, inCurrentMonth, isToday);
+            
+            // 为当天分配待办事项
+            if (allTodos != null) {
+                List<TodoItem> dayTodos = new ArrayList<>();
+                for (TodoItem todo : allTodos) {
+                    if (isTodoOnDay(todo, dayCal)) {
+                        dayTodos.add(todo);
+                    }
+                }
+                calendarDay.setTodos(dayTodos);
+            }
+            
+            result.add(calendarDay);
             cal.add(Calendar.DAY_OF_MONTH, 1);
         }
         return result;
+    }
+
+    private boolean isTodoOnDay(TodoItem todo, Calendar dayCal) {
+        // 检查待办事项的开始时间是否与当天相同
+        String startTime = todo.getStartTime();
+        if (startTime != null && !startTime.isEmpty()) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                Calendar todoCal = Calendar.getInstance();
+                todoCal.setTime(sdf.parse(startTime));
+                return sameDay(todoCal, dayCal);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     private boolean sameDay(Calendar a, Calendar b) {
@@ -139,6 +199,12 @@ public class CalendarActivity extends AppCompatActivity {
     private String formatMonthLabel(Calendar cal) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月", Locale.getDefault());
         return sdf.format(cal.getTime());
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executor.shutdown();
     }
 }
 

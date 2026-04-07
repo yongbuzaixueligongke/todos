@@ -28,7 +28,6 @@ public class ProfileActivity extends AppCompatActivity {
         // 创建个人主页列表项
         List<String> profileItems = new ArrayList<>();
         profileItems.add("专注数据统计");
-        profileItems.add("个性化");
         profileItems.add("音乐");
         profileItems.add("退出登录");
         profileItems.add("设置");
@@ -40,7 +39,7 @@ public class ProfileActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 3) { // 退出登录选项的索引
+                if (position == 2) { // 退出登录选项的索引
                     Intent intent = new Intent(ProfileActivity.this, RegisterActivity.class);
                     startActivity(intent);
                     finish(); // 可选：结束当前活动
@@ -50,7 +49,7 @@ public class ProfileActivity extends AppCompatActivity {
                     startActivity(intent);
                     finish(); // 可选：结束当前活动
                 }
-                if (position == 2) { // 音乐选项的索引
+                if (position == 1) { // 音乐选项的索引
                     Intent intent = new Intent(ProfileActivity.this, MusicActivity.class);
                     startActivity(intent);
                     finish(); // 可选：结束当前活动
@@ -74,7 +73,9 @@ public class ProfileActivity extends AppCompatActivity {
                     //在当前界面，不需要跳转
                     return true;
                 } else if (item.getItemId() == R.id.nav_projects) {
-                    startActivity(new Intent(ProfileActivity.this, MessageActivity.class));
+                    Intent intent = new Intent(ProfileActivity.this, MessageActivity.class);
+                    intent.putExtra("navigate_to_projects", true);
+                    startActivity(intent);
                     return true;
                 }
                 return false;

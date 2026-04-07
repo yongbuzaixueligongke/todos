@@ -36,6 +36,14 @@ public class TodoAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
+    public void notifyItemInserted(int position) {
+        notifyDataSetChanged();
+    }
+
+    public void notifyItemChanged(int position) {
+        notifyDataSetChanged();
+    }
+
     @Override
     public int getCount() {
         return items.size();
@@ -51,34 +59,52 @@ public class TodoAdapter extends BaseAdapter {
         return items.get(position).getId();
     }
 
+    private final CompoundButton.OnCheckedChangeListener checkBoxListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            ViewHolder holder = (ViewHolder) buttonView.getTag();
+            TodoItem item = holder.item;
+            item.setCompleted(isChecked);
+            if (checkedListener != null) {
+                checkedListener.onCheckedChanged(item, isChecked);
+            }
+        }
+    };
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder holder;
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.list_message, parent, false);
+            holder = new ViewHolder();
+            holder.titleTextView = convertView.findViewById(R.id.message_title);
+            holder.contentTextView = convertView.findViewById(R.id.message_content);
+            holder.timeTextView = convertView.findViewById(R.id.message_time);
+            holder.checkBox = convertView.findViewById(R.id.message_checkbox);
+            holder.checkBox.setTag(holder);
+            holder.checkBox.setOnCheckedChangeListener(checkBoxListener);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
         }
 
         TodoItem item = items.get(position);
-        TextView titleTextView = convertView.findViewById(R.id.message_title);
-        TextView contentTextView = convertView.findViewById(R.id.message_content);
-        TextView timeTextView = convertView.findViewById(R.id.message_time);
-        CheckBox checkBox = convertView.findViewById(R.id.message_checkbox);
+        holder.item = item;
+        holder.titleTextView.setText(item.getTitle());
+        holder.contentTextView.setText(item.getContent());
+        holder.timeTextView.setText(item.getTime());
 
-        titleTextView.setText(item.getTitle());
-        contentTextView.setText(item.getContent());
-        timeTextView.setText(item.getTime());
-
-        checkBox.setOnCheckedChangeListener(null);
-        checkBox.setChecked(item.isCompleted());
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                item.setCompleted(isChecked);
-                if (checkedListener != null) {
-                    checkedListener.onCheckedChanged(item, isChecked);
-                }
-            }
-        });
+        // 直接设置状态，因为监听器已经通过holder关联到了正确的item
+        holder.checkBox.setChecked(item.isCompleted());
 
         return convertView;
+    }
+
+    private static class ViewHolder {
+        TodoItem item;
+        TextView titleTextView;
+        TextView contentTextView;
+        TextView timeTextView;
+        CheckBox checkBox;
     }
 }
