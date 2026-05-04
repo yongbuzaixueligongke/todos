@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android Feature Iteration"
+  short_description: "Add and refactor features in an existing Android Java/XML app."
+  default_prompt: "Use $android-feature-iteration to add or refactor a feature in my existing Android app."

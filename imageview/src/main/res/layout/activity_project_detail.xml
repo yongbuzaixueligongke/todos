@@ -1,163 +1,168 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#F5EEED">
+    android:background="#FFFFFF"
+    android:orientation="vertical">
 
-    <!-- 顶部导航栏 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@drawable/list_03"
+        android:layout_height="72dp"
+        android:background="#FFFFFF"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp">
 
-        <Button
+        <ImageButton
             android:id="@+id/btn_back"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@android:color/transparent"
-            android:text="返回"
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
+            android:contentDescription="Back"
+            android:padding="12dp"
+            android:src="@drawable/ic_arrow_back_custom" />
 
         <TextView
+            android:id="@+id/tv_project_header_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="项目详情"
+            android:gravity="center"
+            android:text="Project"
             android:textColor="@android:color/black"
-            android:textSize="18sp"
-            android:gravity="center" />
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/btn_edit"
+        <ImageButton
+            android:id="@+id/btn_more"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@android:color/transparent"
-            android:text="编辑"
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
+            android:contentDescription="Menu"
+            android:padding="12dp"
+            android:src="@drawable/ic_more_vert_custom" />
     </LinearLayout>
 
-    <!-- 项目信息卡片 -->
-    <LinearLayout
+    <TextView
+        android:id="@+id/tv_project_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFF9F9"
-        android:layout_margin="16dp"
-        android:padding="16dp"
-        android:orientation="vertical">
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="20dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="Project Title"
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
 
-        <!-- 项目标题 -->
-        <TextView
-            android:id="@+id/tv_project_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="项目标题"
-            android:textSize="20sp"
-            android:textColor="@android:color/black"
-            android:layout_marginBottom="16dp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="96dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="18dp"
+        android:background="@drawable/bg_project_summary_card"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="12dp">
 
-        <!-- 项目标签 -->
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="标签："
-                android:textSize="16sp"
-                android:textColor="@android:color/darker_gray" />
-            <TextView
-                android:id="@+id/tv_project_tag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="标签"
-                android:textSize="16sp"
-                android:textColor="@android:color/black" />
-        </LinearLayout>
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
 
-        <!-- 项目时间 -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="时间："
-                android:textSize="16sp"
-                android:textColor="@android:color/darker_gray" />
             <TextView
                 android:id="@+id/tv_project_time"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="开始时间 - 结束时间"
-                android:textSize="16sp"
-                android:textColor="@android:color/black" />
-        </LinearLayout>
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="2026-05-01 - 2026-05-20"
+                android:textColor="#2D221E"
+                android:textSize="14sp" />
 
-        <!-- 项目备注 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/tv_project_remaining_days"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="备注："
-                android:textSize="16sp"
-                android:textColor="@android:color/darker_gray"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="&#x8FD8;&#x5269; 0 &#x5929;"
+                android:textColor="#9AA0A6"
+                android:textSize="12sp" />
+
             <TextView
                 android:id="@+id/tv_project_remark"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="备注内容"
-                android:textSize="16sp"
-                android:textColor="@android:color/black"
-                android:minLines="3" />
+                android:layout_marginTop="6dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Remark"
+                android:textColor="#9AA0A6"
+                android:textSize="12sp" />
         </LinearLayout>
+
+        <com.example.imageview.ProjectProgressRingView
+            android:id="@+id/project_progress_ring"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginStart="12dp" />
+
     </LinearLayout>
 
-    <!-- 子任务标题 -->
+    <TextView
+        android:id="@+id/tv_project_tag"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="#F6EFEE"
-        android:orientation="horizontal"
+        android:layout_height="44dp"
+        android:background="#FFFFFF"
         android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:paddingHorizontal="16dp">
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="子任务"
+            android:text="Subtasks"
+            android:textColor="@android:color/black"
             android:textSize="18sp"
-            android:textColor="@android:color/black" />
-        <Button
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/btn_add_subtask"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/add_circle"
-            android:layout_marginRight="8dp" />
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="8dp"
+            android:background="@android:color/transparent"
+            android:gravity="center"
+            android:text="+"
+            android:textColor="@android:color/black"
+            android:textSize="26sp" />
     </LinearLayout>
 
-    <!-- 子任务列表 -->
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_subtasks"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="#FFF9F9"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="4dp"
+        android:background="#FFFFFF"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp"
         android:paddingHorizontal="16dp"
         android:paddingTop="8dp" />
 

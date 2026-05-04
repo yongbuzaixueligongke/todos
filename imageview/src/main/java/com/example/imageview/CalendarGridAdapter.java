@@ -42,6 +42,18 @@ public class CalendarGridAdapter extends RecyclerView.Adapter<CalendarGridAdapte
     }
 
     public void setCellHeightPx(int cellHeightPx) {
+        if (this.cellHeightPx == cellHeightPx) {
+            return;
+        }
+        this.cellHeightPx = cellHeightPx;
+        notifyDataSetChanged();
+    }
+
+    public void setDaysAndCellHeight(List<CalendarDay> newDays, int cellHeightPx) {
+        days.clear();
+        if (newDays != null) {
+            days.addAll(newDays);
+        }
         this.cellHeightPx = cellHeightPx;
         notifyDataSetChanged();
     }
@@ -96,28 +108,23 @@ public class CalendarGridAdapter extends RecyclerView.Adapter<CalendarGridAdapte
                 todoTag.setLayoutParams(params);
                 todoTag.setText(todo.getTitle());
                 todoTag.setTextSize(10);
-                todoTag.setPadding(4, 2, 4, 2);
+                todoTag.setTextColor(android.graphics.Color.parseColor("#30343B"));
+                todoTag.setPadding(
+                        PriorityTagUtils.dp(todoTag, 5),
+                        PriorityTagUtils.dp(todoTag, 2),
+                        PriorityTagUtils.dp(todoTag, 5),
+                        PriorityTagUtils.dp(todoTag, 2)
+                );
                 todoTag.setEllipsize(android.text.TextUtils.TruncateAt.END);
                 todoTag.setSingleLine(true);
                 
-                // 根据待办事项的标签设置不同的颜色
-                switch (todo.getTag()) {
-                    case "工作":
-                        todoTag.setBackgroundColor(0xFFE3F2FD); // 浅蓝色
-                        break;
-                    case "学习":
-                        todoTag.setBackgroundColor(0xFFE8F5E8); // 浅绿色
-                        break;
-                    case "健康":
-                        todoTag.setBackgroundColor(0xFFFFEBEE); // 浅红色
-                        break;
-                    case "旅行":
-                        todoTag.setBackgroundColor(0xFFFFF3E0); // 浅橙色
-                        break;
-                    default:
-                        todoTag.setBackgroundColor(0xFFF5F5F5); // 浅灰色
-                        break;
-                }
+                todoTag.setBackground(PriorityTagUtils.createCalendarTodoDrawable(
+                        todo.getTag(),
+                        PriorityTagUtils.dp(todoTag, 5)
+                ));
+                int iconSize = PriorityTagUtils.dp(todoTag, 8);
+                todoTag.setCompoundDrawables(PriorityTagUtils.createDotDrawable(todo.getTag(), iconSize), null, null, null);
+                todoTag.setCompoundDrawablePadding(PriorityTagUtils.dp(todoTag, 4));
 
                 // 添加点击事件
                 final TodoItem finalTodo = todo;
@@ -154,4 +161,3 @@ public class CalendarGridAdapter extends RecyclerView.Adapter<CalendarGridAdapte
         }
     }
 }
-

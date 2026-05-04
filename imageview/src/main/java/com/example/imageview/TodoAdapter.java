@@ -1,110 +1,194 @@
 package com.example.imageview;
 
-import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 待办列表适配器，支持 CheckBox 勾选状态与数据库同步。
- */
-public class TodoAdapter extends BaseAdapter {
+public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private static final int VIEW_TYPE_HEADER = 0;
+    private static final int VIEW_TYPE_TODO = 1;
 
     public interface OnTodoCheckedListener {
         void onCheckedChanged(TodoItem item, boolean checked);
     }
 
-    private final Context context;
-    private List<TodoItem> items;
-    private final OnTodoCheckedListener checkedListener;
+    public interface OnTodoClickListener {
+        void onTodoClick(TodoItem item);
+    }
 
-    public TodoAdapter(Context context, List<TodoItem> items, OnTodoCheckedListener checkedListener) {
-        this.context = context;
-        this.items = items != null ? items : new ArrayList<>();
+    public static class DisplayItem {
+        private final String headerTitle;
+        private final TodoItem todoItem;
+
+        private DisplayItem(String headerTitle, TodoItem todoItem) {
+            this.headerTitle = headerTitle;
+            this.todoItem = todoItem;
+        }
+
+        public static DisplayItem header(String title) {
+            return new DisplayItem(title, null);
+        }
+
+        public static DisplayItem todo(TodoItem item) {
+            return new DisplayItem(null, item);
+        }
+
+        public boolean isHeader() {
+            return headerTitle != null;
+        }
+    }
+
+    private final List<DisplayItem> displayItems = new ArrayList<>();
+    private final OnTodoCheckedListener checkedListener;
+    private final OnTodoClickListener clickListener;
+
+    public TodoAdapter(List<TodoItem> items,
+                       OnTodoCheckedListener checkedListener,
+                       OnTodoClickListener clickListener) {
         this.checkedListener = checkedListener;
+        this.clickListener = clickListener;
+        setDisplayItemsWithoutNotify(buildTodoRows(items));
     }
 
     public void setItems(List<TodoItem> items) {
-        this.items = items != null ? items : new ArrayList<>();
+        setDisplayItemsWithoutNotify(buildTodoRows(items));
         notifyDataSetChanged();
     }
 
-    public void notifyItemInserted(int position) {
+    public void setDisplayItems(List<DisplayItem> rows) {
+        setDisplayItemsWithoutNotify(rows);
         notifyDataSetChanged();
     }
 
-    public void notifyItemChanged(int position) {
-        notifyDataSetChanged();
-    }
-
+    @NonNull
     @Override
-    public int getCount() {
-        return items.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return items.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return items.get(position).getId();
-    }
-
-    private final CompoundButton.OnCheckedChangeListener checkBoxListener = new CompoundButton.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            ViewHolder holder = (ViewHolder) buttonView.getTag();
-            TodoItem item = holder.item;
-            item.setCompleted(isChecked);
-            if (checkedListener != null) {
-                checkedListener.onCheckedChanged(item, isChecked);
-            }
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_HEADER) {
+            TextView headerView = new TextView(parent.getContext());
+            headerView.setLayoutParams(new RecyclerView.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            ));
+            int horizontalPadding = dp(parent, 18);
+            headerView.setPadding(horizontalPadding, dp(parent, 18), horizontalPadding, dp(parent, 6));
+            headerView.setTextColor(0xFF202124);
+            headerView.setTextSize(17);
+            headerView.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+            return new HeaderViewHolder(headerView);
         }
-    };
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_message, parent, false);
+        return new TodoViewHolder(view);
+    }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
-        if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.list_message, parent, false);
-            holder = new ViewHolder();
-            holder.titleTextView = convertView.findViewById(R.id.message_title);
-            holder.contentTextView = convertView.findViewById(R.id.message_content);
-            holder.timeTextView = convertView.findViewById(R.id.message_time);
-            holder.checkBox = convertView.findViewById(R.id.message_checkbox);
-            holder.checkBox.setTag(holder);
-            holder.checkBox.setOnCheckedChangeListener(checkBoxListener);
-            convertView.setTag(holder);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int position) {
+        DisplayItem row = displayItems.get(position);
+        if (row.isHeader()) {
+            ((HeaderViewHolder) viewHolder).titleTextView.setText(row.headerTitle);
+            return;
         }
 
-        TodoItem item = items.get(position);
-        holder.item = item;
+        TodoViewHolder holder = (TodoViewHolder) viewHolder;
+        TodoItem item = row.todoItem;
+        holder.boundItem = item;
         holder.titleTextView.setText(item.getTitle());
         holder.contentTextView.setText(item.getContent());
+        if (item.getTag() != null && !item.getTag().trim().isEmpty()) {
+            PriorityTagUtils.applyTagIcon(holder.tagTextView, item.getTag());
+        } else {
+            holder.tagTextView.setText("");
+            holder.tagTextView.setCompoundDrawables(null, null, null, null);
+            holder.tagTextView.setVisibility(View.GONE);
+        }
         holder.timeTextView.setText(item.getTime());
 
-        // 直接设置状态，因为监听器已经通过holder关联到了正确的item
+        holder.checkBox.setOnCheckedChangeListener(null);
         holder.checkBox.setChecked(item.isCompleted());
+        holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (checkedListener != null && holder.boundItem != null) {
+                holder.boundItem.setCompleted(isChecked);
+                checkedListener.onCheckedChanged(holder.boundItem, isChecked);
+            }
+        });
 
-        return convertView;
+        if (item.isOverdue()) {
+            holder.itemView.setAlpha(0.45f);
+        } else {
+            holder.itemView.setAlpha(1.0f);
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (clickListener != null && holder.boundItem != null) {
+                clickListener.onTodoClick(holder.boundItem);
+            }
+        });
     }
 
-    private static class ViewHolder {
-        TodoItem item;
-        TextView titleTextView;
-        TextView contentTextView;
-        TextView timeTextView;
-        CheckBox checkBox;
+    @Override
+    public int getItemCount() {
+        return displayItems.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return displayItems.get(position).isHeader() ? VIEW_TYPE_HEADER : VIEW_TYPE_TODO;
+    }
+
+    private List<DisplayItem> buildTodoRows(List<TodoItem> items) {
+        List<DisplayItem> rows = new ArrayList<>();
+        if (items != null) {
+            for (TodoItem item : items) {
+                rows.add(DisplayItem.todo(item));
+            }
+        }
+        return rows;
+    }
+
+    private void setDisplayItemsWithoutNotify(List<DisplayItem> rows) {
+        displayItems.clear();
+        if (rows != null) {
+            displayItems.addAll(rows);
+        }
+    }
+
+    private int dp(View view, int value) {
+        return Math.round(value * view.getResources().getDisplayMetrics().density);
+    }
+
+    static class HeaderViewHolder extends RecyclerView.ViewHolder {
+        final TextView titleTextView;
+
+        HeaderViewHolder(@NonNull View itemView) {
+            super(itemView);
+            titleTextView = (TextView) itemView;
+        }
+    }
+
+    static class TodoViewHolder extends RecyclerView.ViewHolder {
+        TodoItem boundItem;
+        final TextView titleTextView;
+        final TextView contentTextView;
+        final TextView tagTextView;
+        final TextView timeTextView;
+        final CheckBox checkBox;
+
+        TodoViewHolder(@NonNull View itemView) {
+            super(itemView);
+            titleTextView = itemView.findViewById(R.id.message_title);
+            contentTextView = itemView.findViewById(R.id.message_content);
+            tagTextView = itemView.findViewById(R.id.message_tag);
+            timeTextView = itemView.findViewById(R.id.message_time);
+            checkBox = itemView.findViewById(R.id.message_checkbox);
+        }
     }
 }

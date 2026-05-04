@@ -1,39 +1,327 @@
-<androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/profile_card_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.36">
+
+        <ImageView
+            android:id="@+id/profile_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/list_04" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#33000000" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <ImageView
+                android:id="@+id/profile_avatar"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/circle_avatar_bg"
+                android:scaleType="centerCrop"
+                android:src="@drawable/icon_01" />
+
+            <TextView
+                android:id="@+id/profile_username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="用户昵称"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/profile_account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="账号："
+                android:textColor="#CCFFFFFF"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="0dp"
+        android:layout_weight="0.64"
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <TextView
             android:layout_width="wrap_content"
-            android:layout_height="90dp"
-            android:background="@drawable/list_04"
-            android:padding="16dp"
-            android:text="个人主页"
-            android:textColor="#49454F"
-            android:textSize="24sp"/>
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="待办管理"
+            android:textColor="#888888"
+            android:textSize="13sp" />
 
-        <ListView
-            android:id="@+id/profile_list_view"
+        <LinearLayout
+            android:id="@+id/menu_all_tasks"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:background="#F1F9FF"/>
+            android:layout_height="52dp"
+            android:background="@drawable/menu_item_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
 
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_menu_all_tasks" />
 
-        <!-- 底部导航栏 -->
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottom_navigation"
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:text="所有待办"
+                android:textColor="#1C1B1F"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:alpha="0.4"
+                android:rotation="180"
+                android:src="@drawable/ic_arrow_back_custom" />
+
+        </LinearLayout>
+
+        <View
             android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_gravity="bottom"
-            app:menu="@menu/bottom_navigation_menu" />
+            android:layout_height="1dp"
+            android:background="#E0E0E0" />
+
+        <LinearLayout
+            android:id="@+id/menu_completed"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/menu_item_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_menu_completed" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:text="已完成"
+                android:textColor="#1C1B1F"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:alpha="0.4"
+                android:rotation="180"
+                android:src="@drawable/ic_arrow_back_custom" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0" />
+
+        <LinearLayout
+            android:id="@+id/menu_archived"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/menu_item_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_menu_archived" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:text="已归档"
+                android:textColor="#1C1B1F"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:alpha="0.4"
+                android:rotation="180"
+                android:src="@drawable/ic_arrow_back_custom" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0" />
+
+        <LinearLayout
+            android:id="@+id/menu_tag_management"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/menu_item_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <TextView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:gravity="center"
+                android:text="#"
+                android:textColor="#555B65"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:text="标签管理"
+                android:textColor="#1C1B1F"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:alpha="0.4"
+                android:rotation="180"
+                android:src="@drawable/ic_arrow_back_custom" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="12dp"
+            android:text="账户管理"
+            android:textColor="#888888"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:id="@+id/menu_edit_profile"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/menu_item_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <TextView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:gravity="center"
+                android:text="✎"
+                android:textColor="#555B65"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:text="编辑昵称和头像"
+                android:textColor="#1C1B1F"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:alpha="0.4"
+                android:rotation="180"
+                android:src="@drawable/ic_arrow_back_custom" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0" />
+
+        <LinearLayout
+            android:id="@+id/menu_logout"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/menu_item_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <TextView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:gravity="center"
+                android:text="↩"
+                android:textColor="#555B65"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:text="退出登录"
+                android:textColor="#1C1B1F"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:alpha="0.4"
+                android:rotation="180"
+                android:src="@drawable/ic_arrow_back_custom" />
+
+        </LinearLayout>
+
+
     </LinearLayout>
 
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_gravity="bottom"
+        app:menu="@menu/bottom_navigation_menu" />
 
-</androidx.drawerlayout.widget.DrawerLayout>
+</LinearLayout>

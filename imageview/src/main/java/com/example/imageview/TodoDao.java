@@ -13,6 +13,9 @@ public interface TodoDao {
     @Query("SELECT * FROM todo_items")
     List<TodoItem> getAll();
 
+    @Query("SELECT * FROM todo_items WHERE startDateTimeMillis >= :startInclusive AND startDateTimeMillis < :endExclusive ORDER BY startDateTimeMillis ASC")
+    List<TodoItem> getByDateRange(long startInclusive, long endExclusive);
+
     @Query("SELECT * FROM todo_items WHERE projectId = :projectId")
     List<TodoItem> getByProjectId(long projectId);
 
@@ -24,6 +27,12 @@ public interface TodoDao {
 
     @Delete
     void delete(TodoItem item);
+
+    @Query("DELETE FROM todo_items WHERE id = :id")
+    void deleteById(long id);
+
+    @Query("DELETE FROM todo_items WHERE projectId = :projectId")
+    void deleteByProjectId(long projectId);
 
     @Query("UPDATE todo_items SET completed = :completed WHERE id = :id")
     void setCompleted(long id, boolean completed);
@@ -37,18 +46,10 @@ public interface TodoDao {
     @Query("SELECT * FROM todo_items WHERE id = :id")
     TodoItem getById(long id);
 
-    @Query("SELECT * FROM todo_items WHERE uuid = :uuid")
-    TodoItem getByUuid(String uuid);
+    @Query("UPDATE todo_items SET tag = '', updatedAt = :updatedAt WHERE tag = :tag COLLATE NOCASE")
+    void clearTag(String tag, long updatedAt);
 
-    @Query("SELECT * FROM todo_items WHERE syncStatus != 2")
-    List<TodoItem> getUnsyncedItems();
+    @Query("SELECT projectId AS projectId, COUNT(*) AS taskCount FROM todo_items WHERE projectId > 0 GROUP BY projectId")
+    List<ProjectTaskCount> getProjectTaskCounts();
 
-    @Query("UPDATE todo_items SET syncStatus = :syncStatus WHERE id = :id")
-    void updateSyncStatus(long id, int syncStatus);
-
-    @Query("UPDATE todo_items SET syncStatus = :syncStatus, syncedAt = :syncedAt WHERE id = :id")
-    void updateSyncStatusAndSyncedAt(long id, int syncStatus, long syncedAt);
-
-    @Query("SELECT * FROM todo_items WHERE updatedAt > :lastSyncTime")
-    List<TodoItem> getItemsUpdatedAfter(long lastSyncTime);
 }

@@ -1,159 +1,295 @@
 package com.example.imageview;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.graphics.Typeface;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewTreeObserver;
+import android.widget.HorizontalScrollView;
 import android.widget.TextView;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Locale;
 
-public class CalendarActivity extends AppCompatActivity {
+public class CalendarActivity extends BaseActivity {
 
-    private TextView calendarTitle;
+    private static final int VIEW_MODE_WEEK = 0;
+    private static final int VIEW_MODE_MONTH = 1;
+
     private TextView monthLabel;
-    private ImageButton btnPrevMonth;
-    private ImageButton btnNextMonth;
+    private TextView buttonWeekMode;
+    private TextView buttonMonthMode;
+    private View weekHeader;
+    private View weekModeContainer;
+    private HorizontalScrollView weekDateHorizontalScroll;
+    private HorizontalScrollView weekTaskHorizontalScroll;
+    private ObservableScrollView weekVerticalScroll;
+    private WeekDateBarView weekDateBarView;
+    private WeekTimeAxisView weekTimeAxisView;
+    private WeekTaskGridView weekTaskGridView;
     private RecyclerView calendarGrid;
     private CalendarGridAdapter gridAdapter;
     private final Calendar currentMonth = Calendar.getInstance();
-    private AppDatabase database;
-    private TodoDao todoDao;
+    private final Calendar selectedDate = Calendar.getInstance();
+    private final List<Calendar> weekDates = new ArrayList<>();
+    private TodoRepository todoRepository;
     private List<TodoItem> allTodos;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private GestureDetector gestureDetector;
+    private boolean calendarGridReady = false;
+    private boolean weekInitialScrollApplied = false;
+    private int currentViewMode = VIEW_MODE_WEEK;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!AccountGuard.requireLogin(this)) {
+            return;
+        }
         setContentView(R.layout.activity_calendar);
 
-        calendarTitle = findViewById(R.id.calendar_title);
         monthLabel = findViewById(R.id.month_label);
-        btnPrevMonth = findViewById(R.id.btn_prev_month);
-        btnNextMonth = findViewById(R.id.btn_next_month);
+        buttonWeekMode = findViewById(R.id.button_week_mode);
+        buttonMonthMode = findViewById(R.id.button_month_mode);
+        weekHeader = findViewById(R.id.week_header);
+        weekModeContainer = findViewById(R.id.week_mode_container);
+        weekDateHorizontalScroll = findViewById(R.id.week_date_horizontal_scroll);
+        weekTaskHorizontalScroll = findViewById(R.id.week_task_horizontal_scroll);
+        weekVerticalScroll = findViewById(R.id.week_vertical_scroll);
+        weekDateBarView = findViewById(R.id.week_date_bar);
+        weekTimeAxisView = findViewById(R.id.week_time_axis);
+        weekTaskGridView = findViewById(R.id.week_task_grid);
         calendarGrid = findViewById(R.id.calendar_grid);
-
-        // 初始化数据库
-        database = AppDatabase.getInstance(this);
-        todoDao = database.todoDao();
-
-        // 加载所有待办事项
-        loadAllTodos();
+        todoRepository = new TodoRepository(this);
 
         gridAdapter = new CalendarGridAdapter(
-                day -> {
-                    calendarTitle.setText("日历 · 选择日期：" + formatDate(day.getDate().getTimeInMillis()));
-                    // 预留：未来可在这里打开“当天待办列表”或在格子内显示待办
-                    Toast.makeText(this, "选择：" + formatDate(day.getDate().getTimeInMillis()), Toast.LENGTH_SHORT).show();
-                },
-                todo -> {
-                    // 打开待办详情页
-                    Intent intent = new Intent(this, TodoDetailActivity.class);
-                    intent.putExtra("todo_id", todo.getId());
-                    startActivity(intent);
-                }
+                day -> Toast.makeText(
+                        this,
+                        "\u9009\u62E9\uFF1A" + formatDate(day.getDate().getTimeInMillis()),
+                        Toast.LENGTH_SHORT
+                ).show(),
+                todo -> showTaskEditor(todo.getId())
         );
 
         calendarGrid.setLayoutManager(new GridLayoutManager(this, 7));
         calendarGrid.setAdapter(gridAdapter);
+        calendarGrid.setHasFixedSize(true);
+        weekTaskGridView.setOnTodoClickListener(todo -> showTaskEditor(todo.getId()));
 
-        // 默认显示当前月 & 今天
         Calendar today = Calendar.getInstance();
         currentMonth.setTimeInMillis(today.getTimeInMillis());
         currentMonth.set(Calendar.DAY_OF_MONTH, 1);
-        calendarTitle.setText("日历 · 今天：" + formatDate(today.getTimeInMillis()));
+        selectedDate.setTimeInMillis(today.getTimeInMillis());
+        normalizeStartOfDay(selectedDate);
+        buildScrollableWeekDates();
+        setupWeekScrolling();
+        setupModeSwitch();
+        applyViewMode(VIEW_MODE_WEEK);
 
-        btnPrevMonth.setOnClickListener(v -> {
-            currentMonth.add(Calendar.MONTH, -1);
-            currentMonth.set(Calendar.DAY_OF_MONTH, 1);
-            updateMonthUi();
-        });
-
-        btnNextMonth.setOnClickListener(v -> {
-            currentMonth.add(Calendar.MONTH, 1);
-            currentMonth.set(Calendar.DAY_OF_MONTH, 1);
-            updateMonthUi();
-        });
+        setupGestures();
+        waitForCalendarGridSize();
+        loadAllTodos();
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_calendar);
-        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.nav_message) {
-                startActivity(new Intent(CalendarActivity.this, MessageActivity.class));
-                return true;
-            } else if (item.getItemId() == R.id.nav_calendar) {
-                return true;
-            } else if (item.getItemId() == R.id.nav_profile) {
-                startActivity(new Intent(CalendarActivity.this, ProfileActivity.class));
-                return true;
-            } else if (item.getItemId() == R.id.nav_projects) {
-                Intent intent = new Intent(CalendarActivity.this, MessageActivity.class);
-                intent.putExtra("navigate_to_projects", true);
-                startActivity(intent);
+        setupBottomNavigation(bottomNavigationView, R.id.nav_calendar);
+    }
+
+    private void setupWeekScrolling() {
+        weekDateBarView.setOnDateSelectedListener(date -> {
+            selectedDate.setTimeInMillis(date.getTimeInMillis());
+            normalizeStartOfDay(selectedDate);
+            refreshCalendarUi();
+            scrollTaskGridToSelectedDate(true);
+        });
+        weekVerticalScroll.setOnScrollChangedListener((scrollX, scrollY, oldScrollX, oldScrollY) ->
+                weekTimeAxisView.setScrollOffset(scrollY));
+    }
+
+    private void buildScrollableWeekDates() {
+        weekDates.clear();
+        Calendar start = (Calendar) selectedDate.clone();
+        moveToWeekStart(start);
+        start.add(Calendar.DAY_OF_YEAR, -21);
+        for (int i = 0; i < 84; i++) {
+            Calendar date = (Calendar) start.clone();
+            normalizeStartOfDay(date);
+            weekDates.add(date);
+            start.add(Calendar.DAY_OF_YEAR, 1);
+        }
+    }
+
+    private void setupGestures() {
+        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null || e2 == null) {
+                    return false;
+                }
+                if (currentViewMode == VIEW_MODE_WEEK) {
+                    return false;
+                }
+
+                float deltaX = e2.getX() - e1.getX();
+                float deltaY = e2.getY() - e1.getY();
+                if (Math.abs(deltaY) >= Math.abs(deltaX)) {
+                    return false;
+                }
+
+                if (deltaX < -80) {
+                    moveForward();
+                    return true;
+                }
+                if (deltaX > 80 && e1.getX() > 80) {
+                    moveBackward();
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
+
+    private void setupModeSwitch() {
+        buttonWeekMode.setOnClickListener(v -> applyViewMode(VIEW_MODE_WEEK));
+        buttonMonthMode.setOnClickListener(v -> applyViewMode(VIEW_MODE_MONTH));
+    }
+
+    private void applyViewMode(int viewMode) {
+        currentViewMode = viewMode;
+        boolean weekMode = viewMode == VIEW_MODE_WEEK;
+        weekHeader.setVisibility(weekMode ? android.view.View.GONE : android.view.View.VISIBLE);
+        weekModeContainer.setVisibility(weekMode ? android.view.View.VISIBLE : android.view.View.GONE);
+        calendarGrid.setVisibility(weekMode ? android.view.View.GONE : android.view.View.VISIBLE);
+
+        buttonWeekMode.setBackgroundResource(weekMode ? R.drawable.calendar_mode_selected_bg : 0);
+        buttonMonthMode.setBackgroundResource(weekMode ? 0 : R.drawable.calendar_mode_selected_bg);
+        buttonWeekMode.setTypeface(Typeface.DEFAULT, weekMode ? Typeface.BOLD : Typeface.NORMAL);
+        buttonMonthMode.setTypeface(Typeface.DEFAULT, weekMode ? Typeface.NORMAL : Typeface.BOLD);
+        buttonWeekMode.setTextColor(weekMode ? 0xFF202124 : 0xFF5F6368);
+        buttonMonthMode.setTextColor(weekMode ? 0xFF5F6368 : 0xFF202124);
+        refreshCalendarUi();
+        if (weekMode) {
+            scrollTaskGridToSelectedDate(true);
+            if (!weekInitialScrollApplied) {
+                weekInitialScrollApplied = true;
+                weekVerticalScroll.post(() -> weekVerticalScroll.scrollTo(0, dp(7 * 68)));
+            }
+        }
+    }
+
+    private void moveForward() {
+        if (currentViewMode == VIEW_MODE_WEEK) {
+            return;
+        } else {
+            currentMonth.add(Calendar.MONTH, 1);
+            currentMonth.set(Calendar.DAY_OF_MONTH, 1);
+        }
+        refreshCalendarUi();
+    }
+
+    private void moveBackward() {
+        if (currentViewMode == VIEW_MODE_WEEK) {
+            return;
+        } else {
+            currentMonth.add(Calendar.MONTH, -1);
+            currentMonth.set(Calendar.DAY_OF_MONTH, 1);
+        }
+        refreshCalendarUi();
+    }
+
+    private void waitForCalendarGridSize() {
+        calendarGrid.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (calendarGrid.getHeight() <= 0) {
+                    return true;
+                }
+                calendarGrid.getViewTreeObserver().removeOnPreDrawListener(this);
+                calendarGridReady = true;
+                refreshCalendarUi();
                 return true;
             }
-            return false;
         });
     }
 
     private void loadAllTodos() {
-        executor.execute(() -> {
-            allTodos = todoDao.getAll();
-            runOnUiThread(() -> {
-                updateMonthUi();
-            });
+        todoRepository.getAll(todos -> {
+            allTodos = todos;
+            refreshCalendarUi();
         });
+    }
+
+    private void refreshCalendarUi() {
+        if (currentViewMode == VIEW_MODE_WEEK) {
+            updateWeekUi();
+        } else {
+            updateMonthUi();
+        }
+    }
+
+    private void updateWeekUi() {
+        monthLabel.setText(formatSelectedDayLabel(selectedDate));
+        weekDateBarView.setDates(weekDates);
+        weekDateBarView.setSelectedDate(selectedDate);
+        weekTaskGridView.setDates(weekDates);
+        weekTaskGridView.setSelectedDate(selectedDate);
+        weekTaskGridView.setTodos(buildWeekTodos());
+        weekTimeAxisView.setScrollOffset(weekVerticalScroll.getScrollY());
     }
 
     private void updateMonthUi() {
         monthLabel.setText(formatMonthLabel(currentMonth));
-        gridAdapter.setDays(buildMonthDays(currentMonth));
+        if (!calendarGridReady) {
+            return;
+        }
 
-        // 关键：把网格区域高度平均分成6行，让“每一天的格子”放大并铺满屏幕剩余空间
-        calendarGrid.post(() -> {
-            int h = calendarGrid.getHeight();
-            if (h > 0) {
-                int cellHeight = Math.max(1, h / 6);
-                gridAdapter.setCellHeightPx(cellHeight);
+        int cellHeight = Math.max(1, calendarGrid.getHeight() / 6);
+        gridAdapter.setDaysAndCellHeight(buildMonthDays(currentMonth), cellHeight);
+    }
+
+    private void showTaskEditor(long todoId) {
+        TaskEditorBottomSheet sheet = TaskEditorBottomSheet.newEditInstance(todoId);
+        sheet.setTaskEditorListener(new TaskEditorBottomSheet.TaskEditorListener() {
+            @Override
+            public void onTaskSaved() {
+                loadAllTodos();
+            }
+
+            @Override
+            public void onTaskDeleted() {
+                loadAllTodos();
             }
         });
+        sheet.show(getSupportFragmentManager(), "calendar_task_editor");
     }
 
     private List<CalendarDay> buildMonthDays(Calendar monthFirstDay) {
         List<CalendarDay> result = new ArrayList<>(42);
-
         Calendar cal = (Calendar) monthFirstDay.clone();
         int targetMonth = cal.get(Calendar.MONTH);
         int targetYear = cal.get(Calendar.YEAR);
 
-        // 以“周一”为一周开始（和你图二一致）
         cal.setFirstDayOfWeek(Calendar.MONDAY);
         cal.set(Calendar.DAY_OF_MONTH, 1);
-
-        int firstDow = cal.get(Calendar.DAY_OF_WEEK); // 1=周日...7=周六
+        int firstDow = cal.get(Calendar.DAY_OF_WEEK);
         int offset = (firstDow - Calendar.MONDAY + 7) % 7;
         cal.add(Calendar.DAY_OF_MONTH, -offset);
 
         Calendar today = Calendar.getInstance();
         for (int i = 0; i < 42; i++) {
             Calendar dayCal = (Calendar) cal.clone();
-            boolean inCurrentMonth = (dayCal.get(Calendar.YEAR) == targetYear) && (dayCal.get(Calendar.MONTH) == targetMonth);
-            boolean isToday = sameDay(dayCal, today);
-            CalendarDay calendarDay = new CalendarDay(dayCal, inCurrentMonth, isToday);
-            
-            // 为当天分配待办事项
+            boolean inCurrentMonth = dayCal.get(Calendar.YEAR) == targetYear
+                    && dayCal.get(Calendar.MONTH) == targetMonth;
+            CalendarDay calendarDay = new CalendarDay(dayCal, inCurrentMonth, sameDay(dayCal, today));
+
             if (allTodos != null) {
                 List<TodoItem> dayTodos = new ArrayList<>();
                 for (TodoItem todo : allTodos) {
@@ -163,7 +299,7 @@ public class CalendarActivity extends AppCompatActivity {
                 }
                 calendarDay.setTodos(dayTodos);
             }
-            
+
             result.add(calendarDay);
             cal.add(Calendar.DAY_OF_MONTH, 1);
         }
@@ -171,19 +307,25 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     private boolean isTodoOnDay(TodoItem todo, Calendar dayCal) {
-        // 检查待办事项的开始时间是否与当天相同
-        String startTime = todo.getStartTime();
-        if (startTime != null && !startTime.isEmpty()) {
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                Calendar todoCal = Calendar.getInstance();
-                todoCal.setTime(sdf.parse(startTime));
-                return sameDay(todoCal, dayCal);
-            } catch (Exception e) {
-                e.printStackTrace();
+        return todo != null && DateTimeUtils.isSameDay(todo.getStartDateTimeMillis(), dayCal);
+    }
+
+    private List<TodoItem> buildWeekTodos() {
+        List<TodoItem> result = new ArrayList<>();
+        if (allTodos == null || weekDates.isEmpty()) {
+            return result;
+        }
+        Calendar rangeStart = (Calendar) weekDates.get(0).clone();
+        Calendar rangeEnd = (Calendar) weekDates.get(weekDates.size() - 1).clone();
+        rangeEnd.add(Calendar.DAY_OF_YEAR, 1);
+        for (TodoItem todo : allTodos) {
+            long startMillis = todo.getStartDateTimeMillis();
+            if (startMillis >= rangeStart.getTimeInMillis()
+                    && startMillis < rangeEnd.getTimeInMillis()) {
+                result.add(todo);
             }
         }
-        return false;
+        return result;
     }
 
     private boolean sameDay(Calendar a, Calendar b) {
@@ -192,19 +334,72 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     private String formatDate(long millis) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日", Locale.getDefault());
-        return sdf.format(millis);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy\u5E74M\u6708d\u65E5", Locale.getDefault());
+        return formatter.format(millis);
     }
 
     private String formatMonthLabel(Calendar cal) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月", Locale.getDefault());
-        return sdf.format(cal.getTime());
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy\u5E74M\u6708", Locale.getDefault());
+        return formatter.format(cal.getTime());
+    }
+
+    private String formatSelectedDayLabel(Calendar cal) {
+        SimpleDateFormat formatter = new SimpleDateFormat("M\u6708d\u65E5 E", Locale.getDefault());
+        return formatter.format(cal.getTime());
+    }
+
+    private void scrollTaskGridToSelectedDate(boolean scrollDateBarToo) {
+        weekTaskGridView.post(() -> {
+            int selectedIndex = indexOfDate(selectedDate);
+            if (selectedIndex < 0) {
+                return;
+            }
+            int dayWidth = weekTaskGridView.getDayColumnWidth();
+            int viewportWidth = Math.max(1, weekTaskHorizontalScroll.getWidth());
+            int targetX = Math.max(0, selectedIndex * dayWidth - viewportWidth / 2 + dayWidth / 2);
+            weekTaskHorizontalScroll.scrollTo(targetX, 0);
+            if (scrollDateBarToo) {
+                weekDateHorizontalScroll.scrollTo(targetX, 0);
+            }
+        });
+    }
+
+    private int indexOfDate(Calendar targetDate) {
+        for (int i = 0; i < weekDates.size(); i++) {
+            if (sameDay(weekDates.get(i), targetDate)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void moveToWeekStart(Calendar calendar) {
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+        int offset = (dayOfWeek - Calendar.MONDAY + 7) % 7;
+        calendar.add(Calendar.DAY_OF_YEAR, -offset);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+    }
+
+    private void normalizeStartOfDay(Calendar calendar) {
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        executor.shutdown();
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (gestureDetector != null) {
+            gestureDetector.onTouchEvent(ev);
+        }
+        return super.dispatchTouchEvent(ev);
     }
 }
-

@@ -1,79 +1,22 @@
 package com.example.imageview;
+
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ListView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.example.myapplication.ui.projects.ProjectsFragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.util.List;
-import java.util.ArrayList;
-
+/**
+ * 兼容旧入口：统一跳转到真正的待办主页 MessageActivity。
+ */
 public class MainActivity extends AppCompatActivity {
-
-    private DrawerLayout drawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_message);
-
-        drawerLayout = findViewById(R.id.drawer_layout);
-        ListView listView = findViewById(R.id.message_list_view);
-
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        // 替换弃用方法
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.nav_message) {
-                // 显示ListView和待办悬浮按钮，隐藏Fragment容器
-                listView.setVisibility(View.VISIBLE);
-                findViewById(R.id.fab_add_todo).setVisibility(View.VISIBLE);
-                findViewById(R.id.fragment_container).setVisibility(View.GONE);
-                return true;
-            } else if (item.getItemId() == R.id.nav_profile) {
-                startActivity(new Intent(MainActivity.this, ProfileActivity.class));
-                return true;
-            } else if (item.getItemId() == R.id.nav_calendar) {
-                startActivity(new Intent(MainActivity.this, CalendarActivity.class));
-                return true;
-            } else if (item.getItemId() == R.id.nav_projects) {
-                // 隐藏ListView和待办悬浮按钮，显示Fragment容器
-                listView.setVisibility(View.GONE);
-                findViewById(R.id.fab_add_todo).setVisibility(View.GONE);
-                findViewById(R.id.fragment_container).setVisibility(View.VISIBLE);
-                getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new ProjectsFragment())
-                    .commit();
-                return true;
-            }
-            return false;
-        });
-
-
-        // 创建消息列表
-        List<Message> messages = new ArrayList<>();
-        messages.add(new Message("Journal", "12/15", "5 minutes ago"));
-        messages.add(new Message("Homework", "Android应用开发", "10 minutes ago"));
-        messages.add(new Message("Hobbies", "音乐", "1 day ago"));
-        messages.add(new Message("Courses", "移动应用开发实践", "1 day ago"));
-        messages.add(new Message("Travel Planner", "长沙", "3 days ago"));
-        messages.add(new Message("Add a new page", "+", ""));
-
-        // 创建适配器并设置到 ListView
-        MessageAdapter adapter = new MessageAdapter(this, messages);
-        listView.setAdapter(adapter);
+        Class<?> targetActivity = new SessionManager(this).isLoggedIn()
+                ? MessageActivity.class
+                : LoginActivity.class;
+        startActivity(new Intent(this, targetActivity));
+        finish();
     }
-
-    public void onUserInfoClick(View view) {
-        // 打开导航栏
-        drawerLayout.openDrawer(GravityCompat.START);
-    }
-
 }

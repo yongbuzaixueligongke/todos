@@ -8,28 +8,22 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(entities = {TodoItem.class, Project.class}, version = 6, exportSchema = false)
+@Database(entities = {TodoItem.class, Project.class, User.class}, version = 9, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static volatile AppDatabase INSTANCE;
 
     public abstract TodoDao todoDao();
+
     public abstract ProjectDao projectDao();
 
-    static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+    public abstract UserDao userDao();
+
+    static final Migration MIGRATION_8_9 = new Migration(8, 9) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
-            database.execSQL("ALTER TABLE todo_items ADD COLUMN uuid TEXT");
-            database.execSQL("ALTER TABLE todo_items ADD COLUMN syncStatus INTEGER NOT NULL DEFAULT 0");
-            database.execSQL("ALTER TABLE todo_items ADD COLUMN createdAt INTEGER NOT NULL DEFAULT 0");
-            database.execSQL("ALTER TABLE todo_items ADD COLUMN updatedAt INTEGER NOT NULL DEFAULT 0");
-            database.execSQL("ALTER TABLE todo_items ADD COLUMN syncedAt INTEGER NOT NULL DEFAULT 0");
-            
-            database.execSQL("ALTER TABLE projects ADD COLUMN uuid TEXT");
-            database.execSQL("ALTER TABLE projects ADD COLUMN syncStatus INTEGER NOT NULL DEFAULT 0");
-            database.execSQL("ALTER TABLE projects ADD COLUMN createdAt INTEGER NOT NULL DEFAULT 0");
-            database.execSQL("ALTER TABLE projects ADD COLUMN updatedAt INTEGER NOT NULL DEFAULT 0");
-            database.execSQL("ALTER TABLE projects ADD COLUMN syncedAt INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `username` TEXT, `passwordHash` TEXT, `passwordSalt` TEXT, `nickname` TEXT, `avatarUri` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL)");
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_users_username` ON `users` (`username`)");
         }
     };
 
@@ -42,9 +36,9 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "todo_database"
                     )
-                    .addMigrations(MIGRATION_5_6)
-                    .allowMainThreadQueries()
-                    .build();
+                            .addMigrations(MIGRATION_8_9)
+                            .fallbackToDestructiveMigration()
+                            .build();
                 }
             }
         }

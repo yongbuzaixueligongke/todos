@@ -1,6 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
+val openAiApiKey = localProperties.getProperty("openai.api.key", "")
+val openAiModel = localProperties.getProperty("openai.model", "gpt-4.1-mini")
 
 android {
     namespace = "com.example.imageview"
@@ -14,6 +24,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "OPENAI_API_KEY", "\"${openAiApiKey.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
+        buildConfigField("String", "OPENAI_MODEL", "\"${openAiModel.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -47,13 +63,4 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("androidx.navigation:navigation-fragment:2.7.7")
     implementation("androidx.navigation:navigation-ui:2.7.7")
-    
-    // 网络请求
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.gson)
-    implementation(libs.okhttp)
-    implementation(libs.gson)
-    
-    // MySQL JDBC驱动
-    implementation("mysql:mysql-connector-java:8.0.33")
 }
